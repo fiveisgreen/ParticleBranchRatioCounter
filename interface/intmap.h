@@ -11,11 +11,11 @@ using namespace std;
 //If the index int is not found you can default or throw an exception. 
 
 //Example use:
-//intmap<int> mymapthing();
-//mymapthing.set("green",5);
-//int whatisfive = mymapthing.getquick("green",-1);
+//intmap<string> mymapthing();
+//mymapthing.set(5,"green");
+//int whatisfive = mymapthing.getquick(5,-1);
 //try{
-//   cout<<"dangerous critter "<<mymapthing.get_throwable("donkey",2)<<endl;
+//   cout<<"dangerous critter "<<mymapthing.get_throwable(4,2)<<endl;//try ot access a non-existant map key 
 //}
 //catch(std::pair <int,int> errorpair){
 //   cerr<<"Error in intmap: Invalid int key "<<errorpair.first<< " code "<<errorpair.second<<endl;
@@ -25,6 +25,7 @@ using namespace std;
 //Example Map Looping 
 //intmap<bool>* kinvarSwitches = new intmap<bool>();
 //for( std::map<int,KinematicVar *>::iterator thisKinvar = allKinVars->begin(); thisKinvar != allKinVars->end(); thisKinvar++) {
+////for( auto thisKinvar = allKinVars->begin(); thisKinvar != allKinVars->end(); thisKinvar++) {
 //            kinvarSwitches->set(thisKinvar->second->tag,false); 
 //}
 
