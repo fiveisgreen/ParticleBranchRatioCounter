@@ -7,8 +7,10 @@
 
 //some precompiler controls 
 #define verbose 0   //turns on all the print statements to give a running history. Don't use this for complex decays.
-#define DECAY_TAUS true   //A switch for whether or not we decay taus, when false, taus are treated as stable particles.
 #define WATCH_THE_CLOCK 1   //Turns on a clock to monitor how long the computation takes
+//Parameters that impact performance: 
+#define DECAY_TAUS true   //A switch for whether or not we decay taus, when false, taus are treated as stable particles.
+#define LEN_D_ARR 4   //LEN_D_ARR - 1 is the number of particles allowed per decay. max useful is 7, seen in taus. Min value = 3
 
 /***************************************************************************
  * This is a calculator for considering all on-shell decay branching
@@ -34,7 +36,6 @@
  * Created by Dr. Anthony Barker, January 2017. 
  * *************************************************************************/
 
-#define LEN_D_ARR 4   //LEN_D_ARR - 1 is the number of particles allowed per decay. max useful is 7, seen in taus. 
 #if WATCH_THE_CLOCK== 1   //Turns on a clock to monitor how long the computation takes
 #include <time.h>
 #endif
@@ -370,24 +371,24 @@ void particle::setTau(int pid,bool decay_taus){
 	//e- nn	0.1781 as e nu
 	array<int,LEN_D_ARR> en = {2,i_sign*(prefix+11), 12}; //ele nu representing ele nu nu
 	daughters.push_back(en);
-	branching_fraction.push_back(0.1781);
+	branching_fraction.push_back(0.1783);
 
 	//mu- nn	0.1707
 	//mu- nng	0.003 
 	array<int,LEN_D_ARR> mn = {2,i_sign*(prefix+13), 12}; //mu nu representing mu nu nu and mu nu nu gamma (rare)
 	daughters.push_back(mn);
-	branching_fraction.push_back(0.1737);
+	branching_fraction.push_back(0.1741);
 
 			#elif LEN_D_ARR>=4 //3 or more particles allowed in decay
 	//e- nn	0.1781
 	array<int,LEN_D_ARR> enn = {3,i_sign*(prefix+11), 12, 12}; //had nu
 	daughters.push_back(enn);
-	branching_fraction.push_back(0.1781);
+	branching_fraction.push_back(0.1783);
 
 	//mu- nn	0.1707
 	array<int,LEN_D_ARR> mnn = {3,i_sign*(prefix+13), 12, 12}; //had nu
 	daughters.push_back(mnn);
-	branching_fraction.push_back(0.1707);
+	branching_fraction.push_back(0.1711);
 
 	//mu- nng	0.003 
 				#if LEN_D_ARR==4
