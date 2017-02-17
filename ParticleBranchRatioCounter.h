@@ -20,12 +20,12 @@
  * which will be the inital particles to be decayed. 
  *
  * Each combination of stable particle is supplied to 
- * analyser::consider and tallied. This should be the main point 
+ * analyzer::consider and tallied. This should be the main point 
  * of interest for editing since all sorts of things can be tallied about 
- * physics siganls. Plug in different analysers using polymorphism 
+ * physics siganls. Plug in different analyzers using polymorphism 
  * to shape "consider" and "report" to the question at hand.
  *
- * At the end of the calculation, analyser::report gives a report
+ * At the end of the calculation, analyzer::report gives a report
  * of what was tellied. 
  *
  * SM Particle branching ratios are based on the 2016 PDG. 
@@ -151,15 +151,15 @@ bool stages_are_equal(stage* A, stage* B){
 	//
 }*/
 
-class analyser{
+class analyzer{
 	public: 
-	analyser(){}
-	virtual ~analyser(){}
+	analyzer(){}
+	virtual ~analyzer(){}
 	virtual void consider(stage* astage){}
 	virtual void report(){}
 };
 
-class dilepAna : public analyser{
+class dilepAna : public analyzer{
 	private: 
 		long n_leaves;
 		long n_leavesDL;
@@ -202,7 +202,7 @@ class dilepAna : public analyser{
 			br_SSOF=0.;
 		}
 		~dilepAna(){}
-};//end class analyser
+};//end class analyzer
 
 void dilepAna::consider(stage* astage){
 		#if verbose==1
@@ -782,7 +782,7 @@ void initalize_stack_with_1_particle(stack<stage*>& sstack, int pid1){
 	sstack.push(out);
 }
 
-void ParticleBranchRatioCounter_core(analyser* Analyser, int pid1,int pid2=0, int pid3=0,int pid4=0){
+void ParticleBranchRatioCounter_core(analyzer* Analyzer, int pid1,int pid2=0, int pid3=0,int pid4=0){
     //the core analysis loop function. 
     //The contents of the do-loop are perforance critical.
     //The other sectoins of the function are not performance critical. 
@@ -802,7 +802,7 @@ void ParticleBranchRatioCounter_core(analyser* Analyser, int pid1,int pid2=0, in
 			cout<<"main loop    ";sstack.top()->print();
 			#endif
 	Decay_until_stable(sstack);
-	Analyser->consider(sstack.top());
+	Analyzer->consider(sstack.top());
     }while(next(sstack));
 			#if WATCH_THE_CLOCK==1 
 			clock_t stop_clock = clock();

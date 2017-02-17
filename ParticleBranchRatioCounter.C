@@ -11,12 +11,12 @@
  * which will be the inital particles to be decayed. 
  *
  * Each combination of stable particle is supplied to 
- * analyser::consider and tallied. This should be the main point 
+ * analyzer::consider and tallied. This should be the main point 
  * of interest for editing since all sorts of things can be tallied about 
- * physics siganls. Plug in different analysers using polymorphism 
+ * physics siganls. Plug in different analyzers using polymorphism 
  * to shape "consider" and "report" to the question at hand.
  *
- * At the end of the calculation, analyser::report gives a report
+ * At the end of the calculation, analyzer::report gives a report
  * of what was tellied. 
  *
  * SM Particle branching ratios are based on the 2016 PDG. 
@@ -30,7 +30,7 @@ using namespace std;
 //HERE IS AN EXAMPLE ANALYSER IMPLEMTATION. 
 //MAKE YOUR OWN AND PLUG IT INTO 
 //
-/*class dilepAna : public analyser{
+/*class dilepAna : public analyzer{
 	//required elements:
        	//constructor, destructor 
         //void consider(stage* astage) //function to be run on every leaf. 
@@ -78,7 +78,7 @@ using namespace std;
 			br_SSOF=0.;
 		}
 		~dilepAna(){}
-};//end class analyser
+};//end class analyzer
 
 void dilepAna::consider(stage* astage){
 		#if verbose==1
@@ -128,31 +128,31 @@ void dilepAna::consider(stage* astage){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-enum whichAnalyser:int{nlep, signflavor};
+enum whichAnalyzer:int{nlep, signflavor};
 
-void ParticleBranchRatioCounter(whichAnalyser WhichAnalyser, int pid1,int pid2=0, int pid3=0,int pid4=0){
+void ParticleBranchRatioCounter(whichAnalyzer WhichAnalyzer, int pid1,int pid2=0, int pid3=0,int pid4=0){
     //the main UI function. 
     //not performance critical, just be careful how much work you give to the analyzer. 
 
 
-    //specify an alayser. Plug in custom analysers here. 
-    analyser* Analyser; //collects data about the leaves of the decay tree. //delete4
+    //specify an alayser. Plug in custom analyzers here. 
+    analyzer* Analyzer; //collects data about the leaves of the decay tree. //delete4
 
-    switch(WhichAnalyser){
+    switch(WhichAnalyzer){
 	case signflavor:
 	case default: 
-	    Analyser = new dilepAna(); 
+	    Analyzer = new dilepAna(); 
     }
 
 
     //Perform the main analysis: 
-    ParticleBranchRatioCounter_core(Analyser, pid1,pid2, pid3,pid4);
+    ParticleBranchRatioCounter_core(Analyzer, pid1,pid2, pid3,pid4);
 
     //report what you found. 
-    Analyser->report(); 
+    Analyzer->report(); 
 
     //cleanup
-    delete Analyser;//delete4
+    delete Analyzer;//delete4
 }//end ParticleBranchRatioCounter
 
 
