@@ -20,12 +20,12 @@
  * which will be the inital particles to be decayed. 
  *
  * Each combination of stable particle is supplied to 
- * analyzer::consider and tallied. This should be the main point 
+ * analyser::consider and tallied. This should be the main point 
  * of interest for editing since all sorts of things can be tallied about 
- * physics siganls. Plug in different analyzers using polymorphism 
+ * physics siganls. Plug in different analysers using polymorphism 
  * to shape "consider" and "report" to the question at hand.
  *
- * At the end of the calculation, analyzer::report gives a report
+ * At the end of the calculation, analyser::report gives a report
  * of what was tellied. 
  *
  * SM Particle branching ratios are based on the 2016 PDG. 
@@ -151,107 +151,14 @@ bool stages_are_equal(stage* A, stage* B){
 	//
 }*/
 
-class analyzer{
+class analyser{
 	public: 
-	analyzer(){}
-	virtual ~analyzer(){}
+	analyser(){}
+	virtual ~analyser(){}
 	virtual void consider(stage* astage){}
 	virtual void report(){}
 };
 
-class dilepAna : public analyzer{
-	private: 
-		long n_leaves;
-		long n_leavesDL;
-		double net_br;
-		double br_0lep;
-		double br_1lep;
-		double br_2lep;
-		double br_3lep;
-		double br_4lep;
-		double br_OSSF;
-		double br_SSSF;
-		double br_OSOF;
-		double br_SSOF;
-
-		//0, 1, 2 top
-
-	public:
-		void consider(stage* astage);
-		void report(){
-			cout<<"Number of leaves: "<<n_leaves<<" net br: "<<net_br<<" N dilepton leaves "<< n_leavesDL<< " br 0 lep " << br_0lep<<endl;
-			cout<< "BRs: 2lep      OSDL      OSSF      OSOF      SSDL      SSSF      SSOF      1lep      3lep      >3lep"<<endl;
-			printf("   %f  %f  %f  %f  %f  %f  %f  %f  %f  %f\n", br_2lep,
-				br_OSSF+br_OSOF, br_OSSF, br_OSOF,
-				br_SSSF+br_SSOF, br_SSSF, br_SSOF,
-				br_1lep, br_3lep, br_4lep);
-
-		}
-		dilepAna(){
-			n_leaves=0;
-			n_leavesDL=0;
-			net_br=0.;
-			br_0lep=0.;
-			br_1lep=0.;
-			br_2lep=0.;
-			br_3lep=0.;
-			br_4lep=0.;
-			br_OSSF=0.;
-			br_SSSF=0.;
-			br_OSOF=0.;
-			br_SSOF=0.;
-		}
-		~dilepAna(){}
-};//end class analyzer
-
-void dilepAna::consider(stage* astage){
-		#if verbose==1
-		//cout<<"$$GOT LEAF$$ "; astage->print(); cout<<endl;
-		#endif
-    ++n_leaves;
-    net_br += astage->branching_fraction;
-	//basics
-
-    int nlep = 0;
-    //int nB = 0;
-    //int nJ = 0; //light jets
-    for(auto inode = astage->list.begin(), endnode = astage->list.end(); inode< endnode ;inode++){
-	int pid = abs( (*inode)->p->pid ) % 100;
-	if(pid == 11 or pid == 13) ++nlep; 
-//	if(pid == 5) nB++;
-//	if(pid == 1 or pid==4 or pid == 21 ) nJ++;
-    }
-
-    if(nlep==0) br_0lep += astage->branching_fraction;
-    else if(nlep==1) br_1lep += astage->branching_fraction;
-    else if(nlep ==2){// and nB >= 1 and nJ >= 2 ){
-	br_2lep += astage->branching_fraction;
-	int pid1 = 0, pid2=0;
-	for(auto inode = astage->list.begin(), endnode = astage->list.end(); inode< endnode ;inode++){
-	    int pid = abs( (*inode)->p->pid ) % 100;
-	    if(pid == 11 or pid == 13){
-		if(pid1==0) pid1= (*inode)->p->pid;
-		else pid2= (*inode)->p->pid;
-	    }
-	}//end second loop
-	if(pid1*pid2 > 0){ //same sign
-	    ++n_leavesDL;
-	    //astage->print();
-		if(pid1%100 == pid2%100) br_SSSF += astage->branching_fraction;
-		else br_SSOF += astage->branching_fraction;
-	}
-	else{ //opposite sign
-		if(abs( pid1 ) % 100 == abs( pid2 ) % 100) br_OSSF += astage->branching_fraction;
-		else br_OSOF += astage->branching_fraction;
-	}
-    }//end dielpton
-    else if(nlep ==3){// and nB >= 1 and nJ >= 2 ){
-	br_3lep += astage->branching_fraction;
-    }
-    else if(nlep >=4){// and nB >= 1 and nJ >= 2 ){
-	br_4lep += astage->branching_fraction;
-    }
-}//end coinsider
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -782,7 +689,7 @@ void initalize_stack_with_1_particle(stack<stage*>& sstack, int pid1){
 	sstack.push(out);
 }
 
-void ParticleBranchRatioCounter_core(analyzer* Analyzer, int pid1,int pid2=0, int pid3=0,int pid4=0){
+void ParticleBranchRatioCounter_core(analyser* Analyser, int pid1,int pid2=0, int pid3=0,int pid4=0){
     //the core analysis loop function. 
     //The contents of the do-loop are perforance critical.
     //The other sectoins of the function are not performance critical. 
@@ -802,7 +709,7 @@ void ParticleBranchRatioCounter_core(analyzer* Analyzer, int pid1,int pid2=0, in
 			cout<<"main loop    ";sstack.top()->print();
 			#endif
 	Decay_until_stable(sstack);
-	Analyzer->consider(sstack.top());
+	Analyser->consider(sstack.top());
     }while(next(sstack));
 			#if WATCH_THE_CLOCK==1 
 			clock_t stop_clock = clock();
@@ -813,3 +720,155 @@ void ParticleBranchRatioCounter_core(analyzer* Analyzer, int pid1,int pid2=0, in
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class dilepAna : public analyser{
+	private: 
+		long n_leaves;
+		long n_leavesDL;
+		double net_br;
+		double br_0lep;
+		double br_1lep;
+		double br_2lep;
+		double br_3lep;
+		double br_4lep;
+		double br_OSSF;
+		double br_SSSF;
+		double br_OSOF;
+		double br_SSOF;
+
+	public:
+		void consider(stage* astage);
+		void report(){
+			cout<<"Number of leaves: "<<n_leaves<<" net br: "<<net_br<<" N dilepton leaves "<< n_leavesDL<< " br 0 lep " << br_0lep<<endl;
+			cout<< "BRs: 2lep      OSDL      OSSF      OSOF      SSDL      SSSF      SSOF      1lep      3lep      >=4lep"<<endl;
+			printf("   %f  %f  %f  %f  %f  %f  %f  %f  %f  %f\n", br_2lep,
+				br_OSSF+br_OSOF, br_OSSF, br_OSOF,
+				br_SSSF+br_SSOF, br_SSSF, br_SSOF,
+				br_1lep, br_3lep, br_4lep);
+
+		}
+		dilepAna(){
+			n_leaves=0;
+			n_leavesDL=0;
+			net_br=0.;
+			br_0lep=0.;
+			br_1lep=0.;
+			br_2lep=0.;
+			br_3lep=0.;
+			br_4lep=0.;
+			br_OSSF=0.;
+			br_SSSF=0.;
+			br_OSOF=0.;
+			br_SSOF=0.;
+		}
+		~dilepAna(){}
+};//end class analyser
+
+void dilepAna::consider(stage* astage){
+		#if verbose==1
+		//cout<<"$$GOT LEAF$$ "; astage->print(); cout<<endl;
+		#endif
+    ++n_leaves;
+    net_br += astage->branching_fraction;
+	//basics
+
+    int nlep = 0;
+    //int nB = 0;
+    //int nJ = 0; //light jets
+    for(auto inode = astage->list.begin(), endnode = astage->list.end(); inode< endnode ;inode++){
+	int pid = abs( (*inode)->p->pid ) % 100;
+	if(pid == 11 or pid == 13) ++nlep; 
+//	if(pid == 5) nB++;
+//	if(pid == 1 or pid==4 or pid == 21 ) nJ++;
+    }
+
+    if(nlep==0) br_0lep += astage->branching_fraction;
+    else if(nlep==1) br_1lep += astage->branching_fraction;
+    else if(nlep ==2){// and nB >= 1 and nJ >= 2 ){
+	br_2lep += astage->branching_fraction;
+	int pid1 = 0, pid2=0;
+	for(auto inode = astage->list.begin(), endnode = astage->list.end(); inode< endnode ;inode++){
+	    int pid = abs( (*inode)->p->pid ) % 100;
+	    if(pid == 11 or pid == 13){
+		if(pid1==0) pid1= (*inode)->p->pid;
+		else pid2= (*inode)->p->pid;
+	    }
+	}//end second loop
+	if(pid1*pid2 > 0){ //same sign
+	    ++n_leavesDL;
+	    //astage->print();
+		if(pid1%100 == pid2%100) br_SSSF += astage->branching_fraction;
+		else br_SSOF += astage->branching_fraction;
+	}
+	else{ //opposite sign
+		if(abs( pid1 ) % 100 == abs( pid2 ) % 100) br_OSSF += astage->branching_fraction;
+		else br_OSOF += astage->branching_fraction;
+	}
+    }//end dielpton
+    else if(nlep ==3){// and nB >= 1 and nJ >= 2 ){
+	br_3lep += astage->branching_fraction;
+    }
+    else if(nlep >=4){// and nB >= 1 and nJ >= 2 ){
+	br_4lep += astage->branching_fraction;
+    }
+}//end coinsider
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+class NLep : public analyser{
+	private: 
+		long n_leaves;
+		long n_leavesDL;
+		double net_br;
+		double br_0lep;
+		double br_1lep;
+		double br_2lep;
+		double br_3lep;
+		double br_4lep;
+
+	public:
+		void consider(stage* astage);
+		void report(){
+			cout<<"Number of leaves: "<<n_leaves<<" net br: "<<net_br<<" (which should be close to 1)"<<endl; 
+			cout<< "BRs: 0lep      1lep      2lep      3lep      >4lep"<<endl;
+			printf("   %f  %f  %f  %f  %f\n", br_0lep,br_1lep, br_2lep, br_3lep, br_4lep);
+		}
+		NLep(){
+			n_leaves=0;
+			n_leavesDL=0;
+			net_br=0.;
+			br_0lep=0.;
+			br_1lep=0.;
+			br_2lep=0.;
+			br_3lep=0.;
+			br_4lep=0.;
+		}
+		~NLep(){}
+};//end class analyser
+
+void NLep::consider(stage* astage){
+		#if verbose==1
+		//cout<<"$$GOT LEAF$$ "; astage->print(); cout<<endl;
+		#endif
+	//basics
+    ++n_leaves;
+    net_br += astage->branching_fraction;
+
+	//count the number of leptons
+    int nlep = 0;
+    //int nB = 0; //for counting B's 
+    //int nJ = 0; //for counting light jets
+    for(auto inode = astage->list.begin(), endnode = astage->list.end(); inode< endnode ;inode++){
+	int pid = abs( (*inode)->p->pid ) % 100;
+	if(pid == 11 or pid == 13) ++nlep; 
+//	if(pid == 5) nB++;
+//	if(pid == 1 or pid==4 or pid == 21 ) nJ++;
+    }
+
+    if(nlep==0) br_0lep += astage->branching_fraction;
+    else if(nlep==1) br_1lep += astage->branching_fraction;
+    else if(nlep ==2) br_2lep += astage->branching_fraction;
+    else if(nlep ==3) br_3lep += astage->branching_fraction;
+    else if(nlep >=4) br_4lep += astage->branching_fraction;
+}//end coinsider
